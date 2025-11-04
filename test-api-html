@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go Health API - Test Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .endpoint-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .endpoint-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .endpoint-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.2);
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .method-badge {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: white;
+        }
+
+        .method-get { background: #10b981; }
+        .method-post { background: #3b82f6; }
+        .method-put { background: #f59e0b; }
+        .method-delete { background: #ef4444; }
+
+        .endpoint-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .endpoint-path {
+            color: #6b7280;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .input-group {
+            margin-bottom: 12px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus,
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-group textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: 'Courier New', monospace;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-get { background: #10b981; }
+        .btn-post { background: #3b82f6; }
+        .btn-put { background: #f59e0b; }
+        .btn-delete { background: #ef4444; }
+
+        .response-section {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .response-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .clear-btn {
+            padding: 8px 16px;
+            background: #6b7280;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .clear-btn:hover {
+            background: #4b5563;
+        }
+
+        #response {
+            background: #1f2937;
+            color: #10b981;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            max-height: 400px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+
+        .empty-response {
+            color: #6b7280;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-success { background: #10b981; color: white; }
+        .status-error { background: #ef4444; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Go Health API Test Interface</h1>
+
+        <div class="endpoint-grid">
+            <!-- Health Check -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method-badge method-get">GET</span>
+                    <span class="endpoint-title">Health Check</span>
+                </div>
+                <div class="endpoint-path">/health</div>
+                <button class="btn-get" onclick="healthCheck()">Test Health Check</button>
+            </div>
+
+            <!-- Get All Users -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method-badge method-get">GET</span>
+                    <span class="endpoint-title">Get All Users</span>
+                </div>
+                <div class="endpoint-path">/api/v1/users</div>
+                <button class="btn-get" onclick="getAllUsers()">Get All Users</button>
+            </div>
+
+            <!-- Get User by ID -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method-badge method-get">GET</span>
+                    <span class="endpoint-title">Get User by ID</span>
+                </div>
+                <div class="endpoint-path">/api/v1/users/:id</div>
+                <div class="input-group">
+                    <label>User ID:</label>
+                    <input type="number" id="getUserId" placeholder="Enter user ID (e.g., 1)" value="1">
+                </div>
+                <button class="btn-get" onclick="getUserById()">Get User</button>
+            </div>
+
+            <!-- Create User -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method-badge method-post">POST</span>
+                    <span class="endpoint-title">Create User</span>
+                </div>
+                <div class="endpoint-path">/api/v1/users</div>
+                <div class="input-group">
+                    <label>Name:</label>
+                    <input type="text" id="createName" placeholder="Enter name">
+                </div>
+                <div class="input-group">
+                    <label>Email:</label>
+                    <input type="email" id="createEmail" placeholder="Enter email">
+                </div>
+                <button class="btn-post" onclick="createUser()">Create User</button>
+            </div>
+
+            <!-- Update User -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method-badge method-put">PUT</span>
+                    <span class="endpoint-title">Update User</span>
+                </div>
+                <div class="endpoint-path">/api/v1/users/:id</div>
+                <div class="input-group">
+                    <label>User ID:</label>
+                    <input type="number" id="updateId" placeholder="Enter user ID" value="1">
+                </div>
+                <div class="input-group">
+                    <label>Name:</label>
+                    <input type="text" id="updateName" placeholder="Enter new name">
+                </div>
+                <div class="input-group">
+                    <label>Email:</label>
+                    <input type="email" id="updateEmail" placeholder="Enter new email">
+                </div>
+                <button class="btn-put" onclick="updateUser()">Update User</button>
+            </div>
+
+            <!-- Delete User -->
+            <div class="endpoint-card">
+                <div class="endpoint-header">
+                    <span class="method-badge method-delete">DELETE</span>
+                    <span class="endpoint-title">Delete User</span>
+                </div>
+                <div class="endpoint-path">/api/v1/users/:id</div>
+                <div class="input-group">
+                    <label>User ID:</label>
+                    <input type="number" id="deleteId" placeholder="Enter user ID to delete">
+                </div>
+                <button class="btn-delete" onclick="deleteUser()">Delete User</button>
+            </div>
+        </div>
+
+        <!-- Response Section -->
+        <div class="response-section">
+            <div class="response-header">
+                <div>
+                    <span class="response-title">Response</span>
+                    <span id="statusBadge"></span>
+                </div>
+                <button class="clear-btn" onclick="clearResponse()">Clear</button>
+            </div>
+            <div id="response" class="empty-response">
+                Click any button above to test the API endpoints.
+                Make sure your server is running on http://localhost:8080
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+
+        function displayResponse(data, status) {
+            const responseDiv = document.getElementById('response');
+            const statusBadge = document.getElementById('statusBadge');
+
+            responseDiv.textContent = JSON.stringify(data, null, 2);
+            responseDiv.className = '';
+
+            if (status >= 200 && status < 300) {
+                statusBadge.innerHTML = `<span class="status-badge status-success">${status} Success</span>`;
+            } else {
+                statusBadge.innerHTML = `<span class="status-badge status-error">${status} Error</span>`;
+            }
+        }
+
+        function displayError(error) {
+            const responseDiv = document.getElementById('response');
+            const statusBadge = document.getElementById('statusBadge');
+
+            responseDiv.textContent = `Error: ${error.message}\n\nMake sure your API server is running on http://localhost:8080`;
+            responseDiv.className = '';
+            statusBadge.innerHTML = `<span class="status-badge status-error">Failed</span>`;
+        }
+
+        function clearResponse() {
+            document.getElementById('response').innerHTML = '<div class="empty-response">Response cleared. Ready for next request.</div>';
+            document.getElementById('statusBadge').innerHTML = '';
+        }
+
+        async function healthCheck() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                displayResponse(data, response.status);
+            } catch (error) {
+                displayError(error);
+            }
+        }
+
+        async function getAllUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/users`);
+                const data = await response.json();
+                displayResponse(data, response.status);
+            } catch (error) {
+                displayError(error);
+            }
+        }
+
+        async function getUserById() {
+            const id = document.getElementById('getUserId').value;
+            if (!id) {
+                alert('Please enter a user ID');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/users/${id}`);
+                const data = await response.json();
+                displayResponse(data, response.status);
+            } catch (error) {
+                displayError(error);
+            }
+        }
+
+        async function createUser() {
+            const name = document.getElementById('createName').value;
+            const email = document.getElementById('createEmail').value;
+
+            if (!name || !email) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/users`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, email })
+                });
+                const data = await response.json();
+                displayResponse(data, response.status);
+
+                // Clear form on success
+                if (response.ok) {
+                    document.getElementById('createName').value = '';
+                    document.getElementById('createEmail').value = '';
+                }
+            } catch (error) {
+                displayError(error);
+            }
+        }
+
+        async function updateUser() {
+            const id = document.getElementById('updateId').value;
+            const name = document.getElementById('updateName').value;
+            const email = document.getElementById('updateEmail').value;
+
+            if (!id || !name || !email) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/users/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, email })
+                });
+                const data = await response.json();
+                displayResponse(data, response.status);
+            } catch (error) {
+                displayError(error);
+            }
+        }
+
+        async function deleteUser() {
+            const id = document.getElementById('deleteId').value;
+
+            if (!id) {
+                alert('Please enter a user ID');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete user ${id}?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/api/v1/users/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                displayResponse(data, response.status);
+
+                // Clear form on success
+                if (response.ok) {
+                    document.getElementById('deleteId').value = '';
+                }
+            } catch (error) {
+                displayError(error);
+            }
+        }
+    </script>
+</body>
+</html>
