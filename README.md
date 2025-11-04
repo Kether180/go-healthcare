@@ -343,7 +343,6 @@ If I had more time, I would add:
 - [ ] **Rate Limiting**: Protection against abuse
 - [ ] **CORS Support**: Cross-origin resource sharing for web clients
 
-## 🎯 Interview Talking Points
 
 **Why Go?**
 - Compiled language with excellent performance
@@ -358,7 +357,7 @@ If I had more time, I would add:
 - Go's struct tags make JSON serialization simple
 - The standard library is powerful and well-designed
 
-**How This Relates to Corti:**
+
 - Real-time health checks are essential for production services
 - CRUD operations are fundamental to any backend system
 - Error handling is critical for healthcare APIs where reliability matters
