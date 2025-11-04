@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"strconv"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,13 +17,15 @@ type HealthRecord struct {
 	Treatment   string `json:"treatment"`
 }
 
-// In-memory storage for health records
-var healthRecords = []HealthRecord{
-	{ID: 1, PatientName: "John Doe", Age: 35, Diagnosis: "Flu", Treatment: "Rest and fluids"},
-	{ID: 2, PatientName: "Jane Smith", Age: 28, Diagnosis: "Sprained Ankle", Treatment: "Ice and elevation"},
-}
-
-var nextID = 3
+// In-memory storage for health records with thread-safe access
+var (
+	healthRecords = []HealthRecord{
+		{ID: 1, PatientName: "John Doe", Age: 35, Diagnosis: "Flu", Treatment: "Rest and fluids"},
+		{ID: 2, PatientName: "Jane Smith", Age: 28, Diagnosis: "Sprained Ankle", Treatment: "Ice and elevation"},
+	}
+	nextID = 3
+	mu     sync.RWMutex
+)
 
 func main() {
 	router := gin.Default()
@@ -52,6 +55,8 @@ func getHealthStatus(c *gin.Context) {
 
 // getAllRecords returns all health records
 func getAllRecords(c *gin.Context) {
+	mu.RLock()
+	defer mu.RUnlock()
 	c.JSON(http.StatusOK, healthRecords)
 }
 
@@ -63,6 +68,8 @@ func getRecordByID(c *gin.Context) {
 		return
 	}
 
+	mu.RLock()
+	defer mu.RUnlock()
 	for _, record := range healthRecords {
 		if record.ID == id {
 			c.JSON(http.StatusOK, record)
@@ -82,6 +89,8 @@ func createRecord(c *gin.Context) {
 		return
 	}
 
+	mu.Lock()
+	defer mu.Unlock()
 	newRecord.ID = nextID
 	nextID++
 	healthRecords = append(healthRecords, newRecord)
@@ -103,6 +112,8 @@ func updateRecord(c *gin.Context) {
 		return
 	}
 
+	mu.Lock()
+	defer mu.Unlock()
 	for i, record := range healthRecords {
 		if record.ID == id {
 			updatedRecord.ID = id
@@ -123,6 +134,8 @@ func deleteRecord(c *gin.Context) {
 		return
 	}
 
+	mu.Lock()
+	defer mu.Unlock()
 	for i, record := range healthRecords {
 		if record.ID == id {
 			healthRecords = append(healthRecords[:i], healthRecords[i+1:]...)
